@@ -2,29 +2,59 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class Pipe : MonoBehaviour
 {
-    public float CurveRadius;
+
     public float PipeRadius;
-
-    public int CurveSegmentCount;
     public int PipeSegmentCount;
-
     public float RingDistance;
+    public float MinCurveRadius, MaxCurveRadius;
+    public int MinCurveSegmentCount, MaxCurveSegmentCount;
 
+    #region props
+    public float CurveRadius { get; private set; }
+    public float CurveAngle { get; private set; }
+    public float RelativeRotation { get; private set; }
+    #endregion
+
+    private int CurveSegmentCount;
     private Mesh mesh;
     private Vector3[] vertices;
     private int[] triangles;
+ 
 
     private void Awake()
     {
         GetComponent<MeshFilter>().mesh = mesh =  new Mesh();
         mesh.name = "PipeMesh";
+
+        Generate();
+    }
+
+    public void Generate()
+    {
+        CurveRadius = UnityEngine.Random.Range(MinCurveRadius, MaxCurveRadius);
+        CurveSegmentCount = UnityEngine.Random.Range(MinCurveSegmentCount, MaxCurveSegmentCount);
+        mesh.Clear();
         SetVertices();
         SetTriangles();
         mesh.RecalculateNormals();
+    }
 
+    public void AlingWith(Pipe pipe)
+    {
+        float relativeRotation = Random.Range(0,CurveSegmentCount) * 360f / PipeSegmentCount;
+
+        transform.SetParent(pipe.transform, false);
+        transform.localPosition = Vector3.zero;
+        transform.localRotation = Quaternion.Euler(0f, 0f, -pipe.CurveAngle);
+        transform.Translate(0f, pipe.CurveRadius, 0f);
+        transform.Rotate(relativeRotation,0f,0f);
+        transform.Translate(0f,-CurveRadius,0f);
+        transform.SetParent(pipe.transform.parent);
+        transform.localScale = Vector3.one;
     }
 
     private void SetTriangles()
@@ -44,6 +74,7 @@ public class Pipe : MonoBehaviour
     {
         vertices = new Vector3[PipeSegmentCount * CurveSegmentCount * 4];
         float uStep = RingDistance / CurveRadius;
+        CurveAngle = uStep * CurveSegmentCount * (360f / (2f * Mathf.PI));
         CreateFirstQuadring(uStep);
         int iDelta = PipeSegmentCount * 4;
 
