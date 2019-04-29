@@ -13,16 +13,19 @@ public class Pipe : MonoBehaviour
     public float MinCurveRadius, MaxCurveRadius;
     public int MinCurveSegmentCount, MaxCurveSegmentCount;
 
+    public PipeItemGenerator[] generators;
+
     #region props
     public float CurveRadius { get; private set; }
     public float CurveAngle { get; private set; }
     public float RelativeRotation { get; private set; }
+    public int CurveSegmentCount{ get; private set; }
     #endregion
 
-    private int CurveSegmentCount;
     private Mesh mesh;
     private Vector3[] vertices;
     private int[] triangles;
+    Vector2[] uv; 
  
 
     private void Awake()
@@ -35,12 +38,29 @@ public class Pipe : MonoBehaviour
 
     public void Generate()
     {
-        CurveRadius = UnityEngine.Random.Range(MinCurveRadius, MaxCurveRadius);
-        CurveSegmentCount = UnityEngine.Random.Range(MinCurveSegmentCount, MaxCurveSegmentCount);
+        CurveRadius = Random.Range(MinCurveRadius, MaxCurveRadius);
+        CurveSegmentCount = Random.Range(MinCurveSegmentCount, MaxCurveSegmentCount);
         mesh.Clear();
         SetVertices();
+        SetUV();
         SetTriangles();
         mesh.RecalculateNormals();
+        generators[Random.Range(0, generators.Length)].GenerateItem(this);
+    }
+
+    private void SetUV()
+    {
+        uv = new Vector2[vertices.Length];
+
+        for (int i = 0; i < vertices.Length; i += 4)
+        {
+            uv[i] = Vector2.zero;
+            uv[i + 1] = Vector2.right;
+            uv[i + 2] = Vector2.up;
+            uv[i + 3] = Vector2.one;
+        }
+
+        mesh.uv = uv;
     }
 
     public void AlingWith(Pipe pipe)
@@ -63,8 +83,8 @@ public class Pipe : MonoBehaviour
         for (int t = 0,i=0; t < triangles.Length; t+=6,i+=4)
         {
             triangles[t] = i;
-            triangles[t + 1] = triangles[t + 4] = i + 1;
-            triangles[t + 2] = triangles[t + 3] = i + 2;
+            triangles[t + 1] = triangles[t + 4] = i + 2;
+            triangles[t + 2] = triangles[t + 3] = i + 1;
             triangles[t + 5] = i + 3;
         }
         mesh.triangles = triangles;

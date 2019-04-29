@@ -27,12 +27,13 @@ public class PipeSystem : MonoBehaviour
                 pipe.AlingWith(pipes[i - 1]);
             }
         }
+        AlignNextPipeWithrigin();
     }
 
     public Pipe SetUpFirstPipe()
     {
-        transform.localPosition = new Vector3(0f,-pipes[0].CurveRadius);
-        return pipes[0];
+        transform.localPosition = new Vector3(0f,-pipes[1].CurveRadius);
+        return pipes[1];
     }
 
     public Pipe SetUpNextPipe()
@@ -41,24 +42,19 @@ public class PipeSystem : MonoBehaviour
         AlignNextPipeWithrigin();
         pipes[pipes.Length - 1].Generate();
         pipes[pipes.Length - 1].AlingWith(pipes[pipes.Length - 2]);
-        transform.localPosition = new Vector3(0f, -pipes[0].CurveRadius);
-        return pipes[0];
+        transform.localPosition = new Vector3(0f, -pipes[1].CurveRadius);
+        return pipes[1];
     }
 
     private void AlignNextPipeWithrigin()
     {
-        Transform transformToAlign = pipes[0].transform;
-        for (int i = 0; i < pipes.Length; i++)
-        {
-            pipes[i].transform.SetParent(transformToAlign);
-        }
+        Transform transformToAlign = pipes[1].transform;
+        
+        pipes[1].transform.SetParent(transformToAlign);
         transformToAlign.localPosition = Vector3.zero;
         transformToAlign.localRotation = Quaternion.identity;
-
-        for (int i = 0; i < pipes.Length; i++)
-        {
-            pipes[i].transform.SetParent(transform);
-        }
+        pipes[1].transform.SetParent(transform);
+       
     }
 
     private void ShiftPipes()
